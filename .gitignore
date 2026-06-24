@@ -1,0 +1,26 @@
+# Build
+target/
+*.class
+
+# Pacotes/temporarios
+*.tar.gz
+*.tmp
+c.tmp
+
+# SEGREDOS / certificados - NUNCA versionar
+*.p12
+*.pfx
+*.key
+*.crt
+*.jks
+*-passwords.properties
+keystore
+
+# Logs
+*.log
+
+# Config local com segredos preenchidos (use os templates versionados)
+**/assinar-config.local.sh
+
+# Documentos renderizados
+*.pdf
