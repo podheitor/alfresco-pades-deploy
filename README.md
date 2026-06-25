@@ -17,6 +17,8 @@ Alfresco — tudo software livre, numa única VM.
 | [`alfresco-signer-integration/`](alfresco-signer-integration/) | Fluxo "A Assinar → Assinados": PDF colocado numa pasta do Alfresco é assinado e movido automaticamente (timer systemd, API REST v1). |
 | [`DEPLOY.md`](DEPLOY.md) | Runbook de implantação ponta a ponta. |
 | [`GUIA-TESTE.md`](GUIA-TESTE.md) | Guia de testes de aceitação (orientado ao usuário final). |
+| [`MANUAL-WORKFLOWS-ALFRESCO.md`](MANUAL-WORKFLOWS-ALFRESCO.md) | Manual ilustrado de **fluxos de trabalho (workflows)**: iniciar/acompanhar/concluir tarefas, tarefas de grupo (pooled), **regras de pasta** e customização **Activiti/BPMN**. Também em `.html`/`.pdf`/`.docx`. |
+| [`screenshots-alfresco/`](screenshots-alfresco/) | Robôs **Playwright** que capturam automaticamente os prints das telas do Share (usados para ilustrar os manuais). |
 
 ## Início rápido
 

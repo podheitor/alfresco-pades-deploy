@@ -12,12 +12,12 @@ Três componentes, nesta ordem:
 
 ## 0. Levar os arquivos para o servidor
 
-Se tiver o tarball (`nbs-deploy.tar.gz`):
+Se tiver o tarball (`alfresco-deploy.tar.gz`):
 
 ```bash
 cd /root
 # (coloque o arquivo aqui por USB/share interno, ou wget do link temporario fornecido)
-tar xzf nbs-deploy.tar.gz
+tar xzf alfresco-deploy.tar.gz
 ls    # deploy/  alfresco-signer-service/  alfresco-signer-integration/
 ```
 

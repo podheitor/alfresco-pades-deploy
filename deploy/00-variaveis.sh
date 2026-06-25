@@ -65,7 +65,7 @@ export DB_PASS="ALTERE_ESTA_SENHA_DB"
 # Senha do usuario admin do Alfresco. TROCAR antes do deploy.
 export ALF_ADMIN_PASS="ALTERE_ESTA_SENHA_ADMIN"
 # Hostname/IP pelo qual o Alfresco sera acessado (usado no proxy e nas URLs)
-export ALF_HOSTNAME="alfresco.nbs.local"
+export ALF_HOSTNAME="alfresco.example.local"
 # Segredo compartilhado entre repo e Solr (mTLS desligado, usar secret).
 export SOLR_SHARED_SECRET="ALTERE_ESTE_SECRET_SOLR"
 
@@ -79,8 +79,8 @@ export AMQ_XMX="1g"         # ActiveMQ
 
 # ----------------------------- TLS / PROXY -----------------------------------
 export USE_NGINX_TLS="true"            # publicar via Nginx + HTTPS
-export TLS_CERT="/etc/ssl/nbs/alfresco.crt"
-export TLS_KEY="/etc/ssl/nbs/alfresco.key"
+export TLS_CERT="/etc/ssl/alfresco/alfresco.crt"
+export TLS_KEY="/etc/ssl/alfresco/alfresco.key"
 
 # =============================================================================
 # Funcoes utilitarias compartilhadas

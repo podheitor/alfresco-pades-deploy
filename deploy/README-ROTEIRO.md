@@ -51,7 +51,7 @@ habilitação de assinatura digital PAdES (ICP-Brasil A1/A3), backup, monitorame
 
 ```bash
 # 1. Copie a pasta deploy/ para o servidor da Cliente
-scp -r deploy/ usuario@servidor-nbs:/tmp/
+scp -r deploy/ usuario@servidor:/tmp/
 
 # 2. No servidor, ENTRE no diretório e edite os segredos
 cd /tmp/deploy
