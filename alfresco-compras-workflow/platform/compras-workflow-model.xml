@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Modelo de tarefas do Fluxo de Compras.
+  Todos os campos do processo vivem no aspecto cpr:comprasData (assim persistem
+  como variáveis do processo e ficam visíveis/edidáveis nas tarefas conforme o
+  share-config). Cada tarefa é um tipo próprio só para o share-config diferenciar
+  o formulário.
+-->
+<model name="cpr:comprasWorkflowModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+  <description>Modelo de tarefas do Fluxo de Compras</description>
+  <author>OpenTechs</author>
+  <version>1.0</version>
+
+  <imports>
+    <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm"/>
+  </imports>
+
+  <namespaces>
+    <namespace uri="http://www.opentechs.com.br/model/compras/1.0" prefix="cpr"/>
+  </namespaces>
+
+  <constraints>
+    <!-- Setor do solicitante -> o VALOR é o grupo-líder (autoridade Alfresco) que
+         aprova como "Gestor Imediato". Os rótulos amigáveis ficam no .properties.
+         Setores cujo grupo-líder está vazio no AD precisam de um líder antes de usar. -->
+    <constraint name="cpr:setorList" type="LIST">
+      <parameter name="allowedValues">
+        <list>
+          <value>GROUP_lider-administrativo</value>
+          <value>GROUP_lider-comercial</value>
+          <value>GROUP_lider-financeiro</value>
+          <value>GROUP_lider-operacional</value>
+          <value>GROUP_lider-ti</value>
+        </list>
+      </parameter>
+    </constraint>
+  </constraints>
+
+  <types>
+
+    <!-- INÍCIO: Solicitação (start task) -->
+    <type name="cpr:solicitacaoTask">
+      <parent>bpm:startTask</parent>
+      <properties>
+        <property name="cpr:descricao">
+          <title>Descrição do bem/serviço</title><type>d:text</type><mandatory>true</mandatory>
+        </property>
+        <property name="cpr:quantidade">
+          <title>Quantidade</title><type>d:int</type>
+        </property>
+        <property name="cpr:centroCusto">
+          <title>Centro de custo</title><type>d:text</type>
+        </property>
+        <property name="cpr:justificativa">
+          <title>Justificativa</title><type>d:text</type><mandatory>true</mandatory>
+        </property>
+        <property name="cpr:prazoDesejado">
+          <title>Prazo desejado</title><type>d:date</type>
+        </property>
+      </properties>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:triagemTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:ajusteTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:cotacaoTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:avaliacaoTecnicaTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:avaliacaoGestorTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:avaliacaoFinanceiraTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+    <type name="cpr:compraTask">
+      <parent>bpm:workflowTask</parent>
+      <mandatory-aspects><aspect>cpr:comprasData</aspect></mandatory-aspects>
+    </type>
+
+  </types>
+
+  <aspects>
+    <!-- Dados compartilhados por todo o fluxo (= variáveis do processo) -->
+    <aspect name="cpr:comprasData">
+      <properties>
+        <!-- setor do solicitante = grupo-líder que aprova como Gestor Imediato -->
+        <property name="cpr:setorLider">
+          <title>Setor (define o Gestor Imediato)</title>
+          <type>d:text</type>
+          <constraints><constraint ref="cpr:setorList"/></constraints>
+        </property>
+        <!-- triagem -->
+        <property name="cpr:conforme">
+          <title>Solicitação conforme?</title><type>d:boolean</type>
+        </property>
+        <property name="cpr:motivoDevolucao">
+          <title>Motivo da devolução / inconformidades</title><type>d:text</type>
+        </property>
+        <!-- cotação -->
+        <property name="cpr:fornecedor">
+          <title>Fornecedor(es)</title><type>d:text</type>
+        </property>
+        <property name="cpr:valorCotacao">
+          <title>Valor da cotação (R$)</title><type>d:double</type>
+        </property>
+        <property name="cpr:prazoEntrega">
+          <title>Prazo de entrega</title><type>d:text</type>
+        </property>
+        <property name="cpr:cotacaoBemSucedida">
+          <title>Cotação bem sucedida?</title><type>d:boolean</type>
+        </property>
+        <property name="cpr:necessitaAvaliacaoTecnica">
+          <title>Necessita de avaliação técnica?</title><type>d:boolean</type>
+        </property>
+        <!-- avaliações -->
+        <property name="cpr:aprovadaTecnica">
+          <title>Avaliação técnica aprovada?</title><type>d:boolean</type>
+        </property>
+        <property name="cpr:parecerTecnico">
+          <title>Parecer técnico</title><type>d:text</type>
+        </property>
+        <property name="cpr:aprovadaGestor">
+          <title>Aprovada pelo Gestor Imediato?</title><type>d:boolean</type>
+        </property>
+        <property name="cpr:parecerGestor">
+          <title>Parecer do Gestor Imediato</title><type>d:text</type>
+        </property>
+        <property name="cpr:aprovadaFinanceira">
+          <title>Aprovada pelo Gestor Financeiro?</title><type>d:boolean</type>
+        </property>
+        <property name="cpr:parecerFinanceiro">
+          <title>Parecer financeiro</title><type>d:text</type>
+        </property>
+        <property name="cpr:dotacaoOrcamentaria">
+          <title>Dotação orçamentária</title><type>d:text</type>
+        </property>
+        <!-- compra -->
+        <property name="cpr:numeroPedido">
+          <title>Número do pedido de compra</title><type>d:text</type>
+        </property>
+        <property name="cpr:observacoesCompra">
+          <title>Observações da compra</title><type>d:text</type>
+        </property>
+      </properties>
+    </aspect>
+  </aspects>
+
+</model>

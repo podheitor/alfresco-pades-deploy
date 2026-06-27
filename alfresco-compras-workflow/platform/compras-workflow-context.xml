@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<!--
+  Bootstrap do Fluxo de Compras: registra o content model e implanta o processo
+  Activiti. Vai para  tomcat/shared/classes/alfresco/extension/  (o Alfresco
+  carrega  classpath:alfresco/extension/*-context.xml  no boot do repositório).
+-->
+<beans>
+
+  <bean id="cpr.workflowBootstrap" parent="workflowDeployer">
+
+    <!-- Content/task model -->
+    <property name="models">
+      <list>
+        <value>alfresco/extension/compras-workflow-model.xml</value>
+      </list>
+    </property>
+
+    <!-- Rótulos (i18n) do modelo e do fluxo -->
+    <property name="labels">
+      <list>
+        <value>alfresco.extension.compras-workflow</value>
+      </list>
+    </property>
+
+    <!-- Definição do processo Activiti -->
+    <property name="workflowDefinitions">
+      <list>
+        <props>
+          <prop key="engineId">activiti</prop>
+          <prop key="location">alfresco/extension/compras-fluxo.bpmn20.xml</prop>
+          <prop key="mimetype">text/xml</prop>
+          <prop key="redeploy">true</prop>
+        </props>
+      </list>
+    </property>
+
+  </bean>
+
+</beans>

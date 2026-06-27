@@ -18,6 +18,7 @@ Alfresco — tudo software livre, numa única VM.
 | [`DEPLOY.md`](DEPLOY.md) | Runbook de implantação ponta a ponta. |
 | [`GUIA-TESTE.md`](GUIA-TESTE.md) | Guia de testes de aceitação (orientado ao usuário final). |
 | [`MANUAL-WORKFLOWS-ALFRESCO.md`](MANUAL-WORKFLOWS-ALFRESCO.md) | Manual ilustrado de **fluxos de trabalho (workflows)**: iniciar/acompanhar/concluir tarefas, tarefas de grupo (pooled), **regras de pasta** e customização **Activiti/BPMN**. Também em `.html`/`.pdf`/`.docx`. |
+| [`alfresco-compras-workflow/`](alfresco-compras-workflow/) | **Workflow Activiti/BPMN** de compras (Solicitação → Triagem → Cotação → aprovações → Compra) com **roteamento dinâmico** da aprovação para o líder do setor escolhido. Inclui os 3 *gotchas* resolvidos (init de variáveis, promoção task→processo, start-form por nome). |
 | [`screenshots-alfresco/`](screenshots-alfresco/) | Robôs **Playwright** que capturam automaticamente os prints das telas do Share (usados para ilustrar os manuais). |
 
 ## Início rápido

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Fluxo de Compras (Processo 1) — Activiti / Alfresco Community 23.2
+  Solicitação -> Triagem -> Cotação -> (Avaliação técnica?) -> Avaliação do
+  Gestor Imediato -> Avaliação Financeira -> Compra.
+  Papéis: Solicitante = iniciador; Compras/Gestores/Financeiro = grupos (pooled).
+  As decisões (gateways) leem variáveis booleanas setadas nos formulários
+  (cpr_conforme, cpr_cotacaoBemSucedida, cpr_necessitaAvaliacaoTecnica,
+   cpr_aprovadaTecnica, cpr_aprovadaGestor, cpr_aprovadaFinanceira).
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://www.opentechs.com.br/workflow/compras">
+
+  <process id="comprasFluxo" name="Fluxo de Compras" isExecutable="true">
+
+    <!-- ============ INÍCIO: Solicitante ============ -->
+    <!-- Inicializa as variáveis de decisão (senão os gateways lançam
+         PropertyNotFoundException ao avaliar ${cpr_xxx} ainda não definido). -->
+    <startEvent id="start" name="Solicitar bem, serviço ou suprimento"
+                activiti:formKey="cpr:solicitacaoTask">
+      <extensionElements>
+        <activiti:executionListener event="end"
+          class="org.alfresco.repo.workflow.activiti.listener.ScriptExecutionListener">
+          <activiti:field name="script"><activiti:string>
+            if (typeof cpr_conforme == 'undefined') execution.setVariable('cpr_conforme', false);
+            if (typeof cpr_cotacaoBemSucedida == 'undefined') execution.setVariable('cpr_cotacaoBemSucedida', false);
+            if (typeof cpr_necessitaAvaliacaoTecnica == 'undefined') execution.setVariable('cpr_necessitaAvaliacaoTecnica', false);
+            if (typeof cpr_aprovadaTecnica == 'undefined') execution.setVariable('cpr_aprovadaTecnica', false);
+            if (typeof cpr_aprovadaGestor == 'undefined') execution.setVariable('cpr_aprovadaGestor', false);
+            if (typeof cpr_aprovadaFinanceira == 'undefined') execution.setVariable('cpr_aprovadaFinanceira', false);
+          </activiti:string></activiti:field>
+        </activiti:executionListener>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="f0" sourceRef="start" targetRef="triagem"/>
+
+    <!-- ============ Compras: triagem ============ -->
+    <userTask id="triagem" name="Realizar triagem da solicitação"
+              activiti:formKey="cpr:triagemTask"
+              activiti:candidateGroups="GROUP_COMPRAS">
+      <extensionElements>
+        <activiti:taskListener event="complete"
+          class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script"><activiti:string>
+            var vs=['cpr_conforme','cpr_cotacaoBemSucedida','cpr_necessitaAvaliacaoTecnica','cpr_aprovadaTecnica','cpr_aprovadaGestor','cpr_aprovadaFinanceira'];
+            for(var i=0;i&lt;vs.length;i++){ var val=task.getVariableLocal(vs[i]); if(val!=null) execution.setVariable(vs[i], val); }
+          </activiti:string></activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="f1" sourceRef="triagem" targetRef="gwConforme"/>
+
+    <exclusiveGateway id="gwConforme" name="Solicitação conforme?" default="fConformeNao"/>
+    <sequenceFlow id="fConformeSim" sourceRef="gwConforme" targetRef="cotacao">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_conforme == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="fConformeNao" sourceRef="gwConforme" targetRef="ajuste"/>
+
+    <!-- ============ Solicitante: ajuste/reenvio ============ -->
+    <userTask id="ajuste" name="Ajustar e reenviar a solicitação"
+              activiti:formKey="cpr:ajusteTask"
+              activiti:assignee="${initiator.properties.userName}"/>
+    <sequenceFlow id="f2" sourceRef="ajuste" targetRef="triagem"/>
+
+    <!-- ============ Compras: cotação ============ -->
+    <userTask id="cotacao" name="Realizar cotação"
+              activiti:formKey="cpr:cotacaoTask"
+              activiti:candidateGroups="GROUP_COMPRAS">
+      <extensionElements>
+        <activiti:taskListener event="complete"
+          class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script"><activiti:string>
+            var vs=['cpr_conforme','cpr_cotacaoBemSucedida','cpr_necessitaAvaliacaoTecnica','cpr_aprovadaTecnica','cpr_aprovadaGestor','cpr_aprovadaFinanceira'];
+            for(var i=0;i&lt;vs.length;i++){ var val=task.getVariableLocal(vs[i]); if(val!=null) execution.setVariable(vs[i], val); }
+          </activiti:string></activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="f3" sourceRef="cotacao" targetRef="gwCotacao"/>
+
+    <exclusiveGateway id="gwCotacao" name="Cotação bem sucedida?" default="fCotacaoNao"/>
+    <sequenceFlow id="fCotacaoSim" sourceRef="gwCotacao" targetRef="gwTecnica">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_cotacaoBemSucedida == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="fCotacaoNao" sourceRef="gwCotacao" targetRef="endCotacao"/>
+    <endEvent id="endCotacao" name="Encerrado: cotação sem sucesso"/>
+
+    <!-- ============ Decisão: necessita avaliação técnica? ============ -->
+    <exclusiveGateway id="gwTecnica" name="Necessita de avaliação técnica?" default="fTecnicaNao"/>
+    <sequenceFlow id="fTecnicaSim" sourceRef="gwTecnica" targetRef="avaliacaoTecnica">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_necessitaAvaliacaoTecnica == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="fTecnicaNao" sourceRef="gwTecnica" targetRef="avaliacaoGestor"/>
+
+    <!-- ============ Solicitante: avaliação técnica da cotação ============ -->
+    <userTask id="avaliacaoTecnica" name="Realizar avaliação técnica da cotação"
+              activiti:formKey="cpr:avaliacaoTecnicaTask"
+              activiti:assignee="${initiator.properties.userName}">
+      <extensionElements>
+        <activiti:taskListener event="complete"
+          class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script"><activiti:string>
+            var vs=['cpr_conforme','cpr_cotacaoBemSucedida','cpr_necessitaAvaliacaoTecnica','cpr_aprovadaTecnica','cpr_aprovadaGestor','cpr_aprovadaFinanceira'];
+            for(var i=0;i&lt;vs.length;i++){ var val=task.getVariableLocal(vs[i]); if(val!=null) execution.setVariable(vs[i], val); }
+          </activiti:string></activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="f4" sourceRef="avaliacaoTecnica" targetRef="gwTecnicaAprovada"/>
+
+    <exclusiveGateway id="gwTecnicaAprovada" name="Avaliação aprovada?" default="fTecnicaReprovada"/>
+    <sequenceFlow id="fTecnicaAprovada" sourceRef="gwTecnicaAprovada" targetRef="avaliacaoGestor">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_aprovadaTecnica == true}</conditionExpression>
+    </sequenceFlow>
+    <!-- reprovada -> nova cotação (volta para Compras) -->
+    <sequenceFlow id="fTecnicaReprovada" sourceRef="gwTecnicaAprovada" targetRef="cotacao"/>
+
+    <!-- ============ Gestor Imediato: avaliação da cotação ============ -->
+    <!-- Gestor Imediato DINÂMICO: grupo-líder do setor escolhido na abertura -->
+    <userTask id="avaliacaoGestor" name="Realizar avaliação da cotação (Gestor Imediato)"
+              activiti:formKey="cpr:avaliacaoGestorTask"
+              activiti:candidateGroups="${cpr_setorLider}">
+      <extensionElements>
+        <activiti:taskListener event="complete"
+          class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script"><activiti:string>
+            var vs=['cpr_conforme','cpr_cotacaoBemSucedida','cpr_necessitaAvaliacaoTecnica','cpr_aprovadaTecnica','cpr_aprovadaGestor','cpr_aprovadaFinanceira'];
+            for(var i=0;i&lt;vs.length;i++){ var val=task.getVariableLocal(vs[i]); if(val!=null) execution.setVariable(vs[i], val); }
+          </activiti:string></activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="f5" sourceRef="avaliacaoGestor" targetRef="gwGestor"/>
+
+    <exclusiveGateway id="gwGestor" name="Avaliação aprovada?" default="fGestorNao"/>
+    <sequenceFlow id="fGestorSim" sourceRef="gwGestor" targetRef="avaliacaoFinanceira">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_aprovadaGestor == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="fGestorNao" sourceRef="gwGestor" targetRef="endGestor"/>
+    <endEvent id="endGestor" name="Encerrado: reprovado pelo Gestor Imediato"/>
+
+    <!-- ============ Gestor Financeiro: avaliação financeira ============ -->
+    <userTask id="avaliacaoFinanceira" name="Realizar avaliação financeira da cotação"
+              activiti:formKey="cpr:avaliacaoFinanceiraTask"
+              activiti:candidateGroups="GROUP_FINANCEIRO">
+      <extensionElements>
+        <activiti:taskListener event="complete"
+          class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script"><activiti:string>
+            var vs=['cpr_conforme','cpr_cotacaoBemSucedida','cpr_necessitaAvaliacaoTecnica','cpr_aprovadaTecnica','cpr_aprovadaGestor','cpr_aprovadaFinanceira'];
+            for(var i=0;i&lt;vs.length;i++){ var val=task.getVariableLocal(vs[i]); if(val!=null) execution.setVariable(vs[i], val); }
+          </activiti:string></activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="f6" sourceRef="avaliacaoFinanceira" targetRef="gwFinanceira"/>
+
+    <exclusiveGateway id="gwFinanceira" name="Avaliação aprovada?" default="fFinanceiraNao"/>
+    <sequenceFlow id="fFinanceiraSim" sourceRef="gwFinanceira" targetRef="compra">
+      <conditionExpression xsi:type="tFormalExpression">${cpr_aprovadaFinanceira == true}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="fFinanceiraNao" sourceRef="gwFinanceira" targetRef="endFinanceira"/>
+    <endEvent id="endFinanceira" name="Encerrado: reprovado pelo Gestor Financeiro"/>
+
+    <!-- ============ Compras: efetiva a compra ============ -->
+    <userTask id="compra" name="Realizar compra do bem, serviço ou suprimento"
+              activiti:formKey="cpr:compraTask"
+              activiti:candidateGroups="GROUP_COMPRAS"/>
+    <sequenceFlow id="f7" sourceRef="compra" targetRef="endConcluido"/>
+    <endEvent id="endConcluido" name="Compra concluída"/>
+
+  </process>
+</definitions>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Formulários (Share) do Fluxo de Compras.
+  Vai para  tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml
+  (se o arquivo já existir, MESCLE estes blocos <config .../> dentro do
+   <alfresco-config> existente — não duplique a raiz).
+
+  Padrão de cada tarefa: campos das etapas anteriores ficam SÓ LEITURA (contexto)
+  e os campos da etapa atual ficam editáveis. O desfecho é definido pelo booleano
+  (ex.: cpr:conforme) + botão "Next/Task Done"; os gateways do BPMN roteiam.
+-->
+<alfresco-config>
+
+  <!-- ===== START FORM (casado pelo NOME do workflow, não por task-type) ===== -->
+  <config evaluator="string-compare" condition="activiti$comprasFluxo">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:setorLider"/>
+        <show id="cpr:descricao"/><show id="cpr:quantidade"/>
+        <show id="cpr:centroCusto"/><show id="cpr:justificativa"/>
+        <show id="cpr:prazoDesejado"/>
+        <show id="bpm:workflowPriority"/><show id="bpm:workflowDueDate"/>
+        <show id="packageItems"/>
+      </field-visibility>
+      <appearance>
+        <set id="sol" appearance="title" label="Solicitação de compra"/>
+        <set id="cfg" appearance="title" label="Prazo e prioridade"/>
+        <set id="anexo" appearance="title" label="Documentos / anexos"/>
+        <field id="cpr:setorLider" set="sol"/>
+        <field id="cpr:descricao" set="sol"/><field id="cpr:quantidade" set="sol"/>
+        <field id="cpr:centroCusto" set="sol"/><field id="cpr:justificativa" set="sol"/>
+        <field id="cpr:prazoDesejado" set="cfg"/>
+        <field id="bpm:workflowPriority" set="cfg"/><field id="bpm:workflowDueDate" set="cfg"/>
+        <field id="packageItems" set="anexo"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== INÍCIO: Solicitação ===== -->
+  <config evaluator="task-type" condition="cpr:solicitacaoTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:setorLider"/>
+        <show id="cpr:descricao"/><show id="cpr:quantidade"/>
+        <show id="cpr:centroCusto"/><show id="cpr:justificativa"/>
+        <show id="cpr:prazoDesejado"/>
+        <show id="packageItems"/>
+        <show id="bpm:priority"/><show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="sol" appearance="title" label="Solicitação"/>
+        <field id="cpr:setorLider" set="sol"/>
+        <field id="cpr:descricao" set="sol"/><field id="cpr:quantidade" set="sol"/>
+        <field id="cpr:centroCusto" set="sol"/><field id="cpr:justificativa" set="sol"/>
+        <field id="cpr:prazoDesejado" set="sol"/>
+        <set id="anexo" appearance="title" label="Anexos"/>
+        <field id="packageItems" set="anexo"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Triagem (Compras) ===== -->
+  <config evaluator="task-type" condition="cpr:triagemTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:descricao"/><show id="cpr:justificativa"/><show id="packageItems"/>
+        <show id="cpr:conforme"/><show id="cpr:motivoDevolucao"/>
+        <show id="bpm:comment"/><show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Solicitação (leitura)"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:justificativa" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="dec" appearance="title" label="Triagem"/>
+        <field id="cpr:conforme" set="dec"/>
+        <field id="cpr:motivoDevolucao" set="dec"/>
+        <field id="bpm:comment" set="dec"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Ajuste (Solicitante) ===== -->
+  <config evaluator="task-type" condition="cpr:ajusteTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:motivoDevolucao"/>
+        <show id="cpr:descricao"/><show id="cpr:quantidade"/>
+        <show id="cpr:centroCusto"/><show id="cpr:justificativa"/><show id="packageItems"/>
+        <show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="mot" appearance="title" label="Inconformidades apontadas"/>
+        <field id="cpr:motivoDevolucao" set="mot" read-only="true"/>
+        <set id="aj" appearance="title" label="Corrija e reenvie"/>
+        <field id="cpr:descricao" set="aj"/><field id="cpr:quantidade" set="aj"/>
+        <field id="cpr:centroCusto" set="aj"/><field id="cpr:justificativa" set="aj"/>
+        <field id="packageItems" set="aj"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Cotação (Compras) ===== -->
+  <config evaluator="task-type" condition="cpr:cotacaoTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:descricao"/><show id="cpr:quantidade"/><show id="packageItems"/>
+        <show id="cpr:parecerTecnico"/>
+        <show id="cpr:fornecedor"/><show id="cpr:valorCotacao"/><show id="cpr:prazoEntrega"/>
+        <show id="cpr:cotacaoBemSucedida"/><show id="cpr:necessitaAvaliacaoTecnica"/>
+        <show id="bpm:comment"/><show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Solicitação (leitura)"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:quantidade" set="ctx" read-only="true"/>
+        <field id="cpr:parecerTecnico" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="cot" appearance="title" label="Cotação"/>
+        <field id="cpr:fornecedor" set="cot"/><field id="cpr:valorCotacao" set="cot"/>
+        <field id="cpr:prazoEntrega" set="cot"/>
+        <field id="cpr:cotacaoBemSucedida" set="cot"/>
+        <field id="cpr:necessitaAvaliacaoTecnica" set="cot"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Avaliação técnica (Solicitante) ===== -->
+  <config evaluator="task-type" condition="cpr:avaliacaoTecnicaTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:descricao"/><show id="cpr:fornecedor"/><show id="cpr:valorCotacao"/>
+        <show id="cpr:prazoEntrega"/><show id="packageItems"/>
+        <show id="cpr:aprovadaTecnica"/><show id="cpr:parecerTecnico"/>
+        <show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Cotação (leitura)"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:fornecedor" set="ctx" read-only="true"/>
+        <field id="cpr:valorCotacao" set="ctx" read-only="true"/>
+        <field id="cpr:prazoEntrega" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="av" appearance="title" label="Avaliação técnica"/>
+        <field id="cpr:aprovadaTecnica" set="av"/><field id="cpr:parecerTecnico" set="av"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Avaliação do Gestor Imediato ===== -->
+  <config evaluator="task-type" condition="cpr:avaliacaoGestorTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:setorLider"/>
+        <show id="cpr:descricao"/><show id="cpr:fornecedor"/><show id="cpr:valorCotacao"/>
+        <show id="cpr:justificativa"/><show id="cpr:parecerTecnico"/><show id="packageItems"/>
+        <show id="cpr:aprovadaGestor"/><show id="cpr:parecerGestor"/>
+        <show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Cotação (leitura)"/>
+        <field id="cpr:setorLider" set="ctx" read-only="true"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:justificativa" set="ctx" read-only="true"/>
+        <field id="cpr:fornecedor" set="ctx" read-only="true"/>
+        <field id="cpr:valorCotacao" set="ctx" read-only="true"/>
+        <field id="cpr:parecerTecnico" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="av" appearance="title" label="Decisão do Gestor Imediato"/>
+        <field id="cpr:aprovadaGestor" set="av"/><field id="cpr:parecerGestor" set="av"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Avaliação financeira ===== -->
+  <config evaluator="task-type" condition="cpr:avaliacaoFinanceiraTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:descricao"/><show id="cpr:fornecedor"/><show id="cpr:valorCotacao"/>
+        <show id="cpr:centroCusto"/><show id="cpr:parecerGestor"/><show id="packageItems"/>
+        <show id="cpr:aprovadaFinanceira"/><show id="cpr:parecerFinanceiro"/>
+        <show id="cpr:dotacaoOrcamentaria"/><show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Cotação (leitura)"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:fornecedor" set="ctx" read-only="true"/>
+        <field id="cpr:valorCotacao" set="ctx" read-only="true"/>
+        <field id="cpr:centroCusto" set="ctx" read-only="true"/>
+        <field id="cpr:parecerGestor" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="av" appearance="title" label="Decisão financeira"/>
+        <field id="cpr:aprovadaFinanceira" set="av"/>
+        <field id="cpr:parecerFinanceiro" set="av"/>
+        <field id="cpr:dotacaoOrcamentaria" set="av"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+  <!-- ===== Compra (Compras) ===== -->
+  <config evaluator="task-type" condition="cpr:compraTask">
+    <forms><form>
+      <field-visibility>
+        <show id="cpr:descricao"/><show id="cpr:fornecedor"/><show id="cpr:valorCotacao"/>
+        <show id="cpr:dotacaoOrcamentaria"/><show id="packageItems"/>
+        <show id="cpr:numeroPedido"/><show id="cpr:observacoesCompra"/>
+        <show id="transitions"/>
+      </field-visibility>
+      <appearance>
+        <set id="ctx" appearance="title" label="Aprovado (leitura)"/>
+        <field id="cpr:descricao" set="ctx" read-only="true"/>
+        <field id="cpr:fornecedor" set="ctx" read-only="true"/>
+        <field id="cpr:valorCotacao" set="ctx" read-only="true"/>
+        <field id="cpr:dotacaoOrcamentaria" set="ctx" read-only="true"/>
+        <field id="packageItems" set="ctx" read-only="true"/>
+        <set id="cmp" appearance="title" label="Efetivar compra"/>
+        <field id="cpr:numeroPedido" set="cmp"/>
+        <field id="cpr:observacoesCompra" set="cmp"/>
+      </appearance>
+    </form></forms>
+  </config>
+
+</alfresco-config>
